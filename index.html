@@ -155,7 +155,7 @@
             <div class="p-6 md:p-12 pb-0">
                 <!-- 100% Width Black Condensed Headline Typography (참고이미지 검은 타이포 사이즈) -->
                 <div class="w-full mb-8">
-                    <h1 class="font-poster text-5xl sm:text-7xl md:text-8xl lg:text-[115px] xl:text-[140px] font-black uppercase tracking-tighter leading-[0.88] text-pitch-black w-full break-words">
+                    <h1 id="physics-headline" class="font-poster text-5xl sm:text-7xl md:text-8xl lg:text-[115px] xl:text-[140px] font-black uppercase tracking-tighter leading-[0.88] text-pitch-black w-full break-words">
                         JIHYE YOON IS A PRODUCT MANAGER &amp; SERVICE PLANNER CURATED BY DATA-DRIVEN STRATEGY IN SEOUL KR.
                     </h1>
                 </div>
@@ -163,7 +163,7 @@
 
             <!-- GIANT WHITE NAME TYPOGRAPHY SECTION (SWAPPED UP TO SECOND POSITION) -->
             <div class="relative w-full bg-pitch-black border-y-4 border-pitch-black py-8 md:py-14 overflow-hidden select-none">
-                <div class="font-poster text-[110px] sm:text-[180px] md:text-[250px] lg:text-[320px] leading-none text-white font-black uppercase tracking-tighter whitespace-nowrap drop-shadow-2xl">
+                <div id="physics-name" class="font-poster text-[110px] sm:text-[180px] md:text-[250px] lg:text-[320px] leading-none text-white font-black uppercase tracking-tighter whitespace-nowrap drop-shadow-2xl">
                     JIHYE YOON &bull;
                 </div>
             </div>
@@ -709,6 +709,119 @@
             ease: 'power3.out',
             stagger: 0.15
         });
+
+        // ==========================================
+        // 6. INTERACTIVE MOUSE PHYSICS COLLISION ENGINE FOR TYPOGRAPHY
+        // ==========================================
+        function initTypographyPhysics(targetSelector, radius = 130, spring = 0.14, damping = 0.84) {
+            const container = document.querySelector(targetSelector);
+            if (!container) return;
+
+            const fullText = container.innerText.trim();
+            container.innerHTML = '';
+
+            const words = fullText.split(' ');
+            const charElements = [];
+
+            words.forEach((word, wIdx) => {
+                const wordSpan = document.createElement('span');
+                wordSpan.style.display = 'inline-block';
+                wordSpan.style.whiteSpace = 'nowrap';
+
+                const chars = word.split('');
+                chars.forEach((char) => {
+                    const span = document.createElement('span');
+                    span.innerText = char;
+                    span.style.display = 'inline-block';
+                    span.style.willChange = 'transform';
+                    span.className = 'physics-letter select-none cursor-pointer';
+
+                    span._physics = {
+                        x: 0, y: 0,
+                        vx: 0, vy: 0,
+                        rot: 0, vRot: 0
+                    };
+
+                    wordSpan.appendChild(span);
+                    charElements.push(span);
+                });
+
+                container.appendChild(wordSpan);
+
+                if (wIdx < words.length - 1) {
+                    const space = document.createElement('span');
+                    space.innerHTML = '&nbsp;';
+                    space.style.display = 'inline-block';
+                    container.appendChild(space);
+                }
+            });
+
+            let mouseX = -9999, mouseY = -9999;
+            let prevMouseX = -9999, prevMouseY = -9999;
+            let mouseVx = 0, mouseVy = 0;
+
+            window.addEventListener('mousemove', (e) => {
+                mouseVx = e.clientX - prevMouseX;
+                mouseVy = e.clientY - prevMouseY;
+                mouseX = e.clientX;
+                mouseY = e.clientY;
+                prevMouseX = mouseX;
+                prevMouseY = mouseY;
+            });
+
+            function updatePhysics() {
+                charElements.forEach((el) => {
+                    const rect = el.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
+
+                    const dx = centerX - mouseX;
+                    const dy = centerY - mouseY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    const p = el._physics;
+
+                    if (dist < radius && dist > 0) {
+                        const force = (radius - dist) / radius; // 0 to 1
+                        const angle = Math.atan2(dy, dx);
+
+                        // Repulsive physical momentum
+                        const pushX = Math.cos(angle) * force * 35 + mouseVx * 0.5;
+                        const pushY = Math.sin(angle) * force * 35 + mouseVy * 0.5;
+
+                        p.vx += pushX;
+                        p.vy += pushY;
+                        p.vRot += (Math.random() - 0.5) * force * 20;
+                    }
+
+                    // Restoring Hooke's Law spring force to original position
+                    p.vx += (0 - p.x) * spring;
+                    p.vy += (0 - p.y) * spring;
+                    p.vRot += (0 - p.rot) * spring;
+
+                    // Apply physics damping (friction)
+                    p.vx *= damping;
+                    p.vy *= damping;
+                    p.vRot *= damping;
+
+                    // Integrate velocity into position displacement
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.rot += p.vRot;
+
+                    // GPU accelerated transform
+                    el.style.transform = `translate3d(${p.x.toFixed(2)}px, ${p.y.toFixed(2)}px, 0) rotate(${p.rot.toFixed(2)}deg)`;
+                });
+
+                requestAnimationFrame(updatePhysics);
+            }
+
+            updatePhysics();
+        }
+
+        // Initialize Physics Engines
+        initTypographyPhysics('#physics-headline', 130, 0.14, 0.84);
+        initTypographyPhysics('#physics-name', 220, 0.10, 0.82);
     </script>
 </body>
 
