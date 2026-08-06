@@ -127,6 +127,7 @@
 
     <!-- Interactive Canvas Particles -->
     <canvas id="bg-canvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+    <canvas id="spark-canvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
 
     <!-- Floating 3D Project Preview Thumbnail Box -->
     <div id="floating-preview" class="fixed pointer-events-none z-50 opacity-0 scale-90 transition-opacity duration-300 ease-out hidden md:block overflow-hidden rounded-xl border border-acid-lime/40 shadow-2xl shadow-acid-lime/20 w-80 h-52 bg-card-dark">
@@ -711,9 +712,66 @@
         });
 
         // ==========================================
-        // 6. INTERACTIVE MOUSE PHYSICS COLLISION ENGINE FOR TYPOGRAPHY
+        // 6. COLLISION SPARK PARTICLE ENGINE & TYPOGRAPHY PHYSICS
         // ==========================================
-        function initTypographyPhysics(targetSelector, radius = 130, spring = 0.14, damping = 0.84) {
+        const sparkCanvas = document.getElementById('spark-canvas');
+        const sparkCtx = sparkCanvas ? sparkCanvas.getContext('2d') : null;
+        let collisionSparks = [];
+
+        function resizeSparkCanvas() {
+            if (sparkCanvas) {
+                sparkCanvas.width = window.innerWidth;
+                sparkCanvas.height = window.innerHeight;
+            }
+        }
+        resizeSparkCanvas();
+        window.addEventListener('resize', resizeSparkCanvas);
+
+        function triggerCollisionSparks(x, y, particleColor) {
+            if (!sparkCtx) return;
+            const count = 3 + Math.floor(Math.random() * 3); // 3 to 5 subtle particles
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = 1.5 + Math.random() * 3.5;
+                collisionSparks.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed - 0.8,
+                    size: 1.5 + Math.random() * 2,
+                    color: particleColor || (Math.random() > 0.5 ? '#D4FF00' : '#FFFFFF'),
+                    life: 1.0,
+                    decay: 0.04 + Math.random() * 0.04
+                });
+            }
+        }
+
+        function renderCollisionSparks() {
+            if (sparkCtx) {
+                sparkCtx.clearRect(0, 0, sparkCanvas.width, sparkCanvas.height);
+                for (let i = collisionSparks.length - 1; i >= 0; i--) {
+                    const s = collisionSparks[i];
+                    s.x += s.vx;
+                    s.y += s.vy;
+                    s.life -= s.decay;
+
+                    if (s.life <= 0) {
+                        collisionSparks.splice(i, 1);
+                        continue;
+                    }
+
+                    sparkCtx.beginPath();
+                    sparkCtx.arc(s.x, s.y, s.size * s.life, 0, Math.PI * 2);
+                    sparkCtx.fillStyle = s.color;
+                    sparkCtx.globalAlpha = Math.max(0, s.life);
+                    sparkCtx.fill();
+                }
+            }
+            requestAnimationFrame(renderCollisionSparks);
+        }
+        renderCollisionSparks();
+
+        function initTypographyPhysics(targetSelector, radius = 45, spring = 0.16, damping = 0.82, sparkColor = '#050505') {
             const container = document.querySelector(targetSelector);
             if (!container) return;
 
@@ -739,7 +797,8 @@
                     span._physics = {
                         x: 0, y: 0,
                         vx: 0, vy: 0,
-                        rot: 0, vRot: 0
+                        rot: 0, vRot: 0,
+                        cooldown: 0
                     };
 
                     wordSpan.appendChild(span);
@@ -780,21 +839,28 @@
                     const dist = Math.sqrt(dx * dx + dy * dy);
 
                     const p = el._physics;
+                    if (p.cooldown > 0) p.cooldown--;
 
                     if (dist < radius && dist > 0) {
                         const force = (radius - dist) / radius; // 0 to 1
                         const angle = Math.atan2(dy, dx);
 
-                        // Repulsive physical momentum
-                        const pushX = Math.cos(angle) * force * 35 + mouseVx * 0.5;
-                        const pushY = Math.sin(angle) * force * 35 + mouseVy * 0.5;
+                        // Repulsive physical momentum with narrow radius
+                        const pushX = Math.cos(angle) * force * 28 + mouseVx * 0.4;
+                        const pushY = Math.sin(angle) * force * 28 + mouseVy * 0.4;
 
                         p.vx += pushX;
                         p.vy += pushY;
-                        p.vRot += (Math.random() - 0.5) * force * 20;
+                        p.vRot += (Math.random() - 0.5) * force * 15;
+
+                        // Trigger subtle spark particles on impact
+                        if (p.cooldown === 0 && force > 0.25) {
+                            triggerCollisionSparks(centerX, centerY, sparkColor);
+                            p.cooldown = 12; // throttle sparks slightly
+                        }
                     }
 
-                    // Restoring Hooke's Law spring force to original position
+                    // Restoring Hooke's Law spring force
                     p.vx += (0 - p.x) * spring;
                     p.vy += (0 - p.y) * spring;
                     p.vRot += (0 - p.rot) * spring;
@@ -804,7 +870,7 @@
                     p.vy *= damping;
                     p.vRot *= damping;
 
-                    // Integrate velocity into position displacement
+                    // Integrate velocity
                     p.x += p.vx;
                     p.y += p.vy;
                     p.rot += p.vRot;
@@ -819,9 +885,9 @@
             updatePhysics();
         }
 
-        // Initialize Physics Engines
-        initTypographyPhysics('#physics-headline', 130, 0.14, 0.84);
-        initTypographyPhysics('#physics-name', 220, 0.10, 0.82);
+        // Initialize Narrowed Physics Engines with Spark Particles
+        initTypographyPhysics('#physics-headline', 45, 0.16, 0.82, '#050505');
+        initTypographyPhysics('#physics-name', 75, 0.12, 0.82, '#D4FF00');
     </script>
 </body>
 
