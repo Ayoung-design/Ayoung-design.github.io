@@ -199,84 +199,46 @@
         </nav>
     </header>
 
-    <main class="relative z-10 pt-20">
+    <main class="relative z-10">
 
-
-
-        <!-- HERO SECTION (AUTHENTIC POSTER_CONCEPT_BOOKSHOP_PEOPLE STYLE) -->
-        <section id="hero" class="relative bg-acid-lime text-pitch-black border-b-8 border-pitch-black overflow-hidden">
-            
-            <div class="p-6 md:p-12 pb-0">
-                <!-- 100% Width Black Condensed Headline Typography (참고이미지 검은 타이포 사이즈) -->
-                <div class="w-full mb-8">
-                    <h1 id="physics-headline" class="font-poster text-5xl sm:text-7xl md:text-8xl lg:text-[115px] xl:text-[140px] font-black uppercase tracking-tighter leading-[0.88] text-pitch-black w-full break-words">
-                        JIHYE YOON IS A PRODUCT MANAGER &amp; SERVICE PLANNER CURATED BY DATA-DRIVEN STRATEGY IN SEOUL KR.
+        <!-- HERO SECTION (EDITORIAL MAGAZINE STYLE) -->
+        <section id="hero" class="relative h-screen w-full grid grid-cols-1 md:grid-cols-12 overflow-hidden border-b border-white/10 select-none bg-pitch-black">
+            <div class="h-[50vh] md:h-full md:col-span-7 relative overflow-hidden">
+                <img src="images/jihye_portrait.png" alt="Jihye Yoon Portrait" class="w-full h-full object-cover object-[center_20%]">
+                <div class="absolute left-6 md:left-12 top-1/2 -translate-y-1/2 text-[10px] md:text-xs font-mono font-bold tracking-widest text-white uppercase space-y-1 drop-shadow-md">
+                    <p>LEAD</p>
+                    <p>SERVICE PLANNING</p>
+                    <p>SEOUL, KR</p>
+                </div>
+            </div>
+            <div class="h-[50vh] md:h-full md:col-span-5 bg-[#FAF8F5] dark:bg-[#121212] text-[#1A1A1A] dark:text-[#EBEBEB] p-6 md:p-12 pb-[14vw] md:pb-[11vw] flex flex-col justify-between box-border z-10">
+                <div class="flex flex-col gap-6 md:gap-8 mt-12 md:mt-16">
+                    <span class="text-[10px] md:text-xs font-mono font-black tracking-widest text-[#1A1A1A] dark:text-[#EBEBEB] uppercase">// PRODUCT MANAGER</span>
+                    <h1 id="physics-headline" class="font-sans text-2xl md:text-3xl lg:text-[2.2vw] font-black leading-tight tracking-tight text-[#1A1A1A] dark:text-[#EBEBEB] max-w-[95%]">
+                        Lead Service Planner and PM at Kakao, leading personalized recommendation systems and launching live commerce products that reach millions of users.
                     </h1>
                 </div>
-            </div>
-
-            <!-- GIANT WHITE NAME TYPOGRAPHY SECTION (SWAPPED UP TO SECOND POSITION) -->
-            <div class="relative w-full bg-pitch-black border-y-4 border-pitch-black py-8 md:py-14 overflow-hidden select-none">
-                <div id="physics-name" class="font-poster text-[110px] sm:text-[180px] md:text-[250px] lg:text-[320px] leading-none text-white font-black uppercase tracking-tighter whitespace-nowrap drop-shadow-2xl">
-                    JIHYE YOON &bull;
-                </div>
-            </div>
-
-            <div class="p-6 md:p-12 pt-8">
-                <!-- LOWER METADATA DETAILS & CONTACTS BLOCK (SWAPPED DOWN BELOW JIHYE YOON) -->
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center border-t-2 border-pitch-black pt-6 mb-8 font-sans">
-                    <div class="lg:col-span-6 font-serif italic text-lg md:text-xl text-pitch-black leading-snug">
-                        "Service Architecture, A/B Testing, User Insights, Growth Mechanics &amp; Cross-Functional Team Leadership."
-                    </div>
-
-                    <div class="lg:col-span-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 lg:pl-6 lg:border-l-2 lg:border-pitch-black font-mono text-xs font-bold text-pitch-black/90">
-                        <div class="space-y-1">
-                            <p><i class="fa-solid fa-phone mr-1.5"></i> +82 10-9172-3385</p>
-                            <p><i class="fa-solid fa-envelope mr-1.5"></i> jihye.yoon@gmail.com</p>
-                            <p><i class="fa-solid fa-globe mr-1.5"></i> brunch.co.kr/@jihye-plan</p>
-                            <p><i class="fa-brands fa-linkedin mr-1.5"></i> linkedin.com/in/jihyeyoon-pm</p>
+                <div class="flex flex-col gap-4">
+                    <span class="text-[10px] md:text-xs font-mono font-bold text-gray-500 dark:text-gray-400">(02)</span>
+                    <div class="flex justify-between items-end w-full">
+                        <div class="text-[10px] md:text-xs font-mono font-bold tracking-widest text-gray-500 dark:text-gray-400 uppercase leading-relaxed">
+                            LEAD<br>
+                            KAKAO CORP<br>
+                            SEOUL, KR
                         </div>
-
-                        <div class="px-4 py-3 bg-pitch-black text-acid-lime rounded-xl font-mono text-xs font-bold uppercase tracking-wider shadow-lg">
-                            KAKAO &bull; TOSS &bull; NAVER &bull; WOOWA BROS
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PAGE TOPIC INDEX LIST BAR (검은 타이포그래피 대주제 목차 나열) -->
-                <div class="w-full border-t-2 border-pitch-black pt-4 font-sans text-xs md:text-sm font-bold tracking-tight text-pitch-black overflow-x-auto whitespace-nowrap scrollbar-none">
-                    <div class="flex items-center gap-6 md:gap-8">
-                        <a href="#about" class="hover:underline flex items-center gap-2">
-                            <span class="font-mono font-black text-xs text-pitch-black/60">01.</span> PROFILE &amp; CAREER INDEX
-                        </a>
-                        <span>/</span>
-                        <a href="#competencies" class="hover:underline flex items-center gap-2">
-                            <span class="font-mono font-black text-xs text-pitch-black/60">02.</span> CORE COMPETENCIES &amp; BENTO
-                        </a>
-                        <span>/</span>
-                        <a href="#projects" class="hover:underline flex items-center gap-2">
-                            <span class="font-mono font-black text-xs text-pitch-black/60">03.</span> KAKAO RECOMMENDER SYSTEM (+23%)
-                        </a>
-                        <span>/</span>
-                        <a href="#projects" class="hover:underline flex items-center gap-2">
-                            <span class="font-mono font-black text-xs text-pitch-black/60">04.</span> LIVE COMMERCE LAUNCH (1.2M MAU)
-                        </a>
-                        <span>/</span>
-                        <a href="#projects" class="hover:underline flex items-center gap-2">
-                            <span class="font-mono font-black text-xs text-pitch-black/60">05.</span> BIZ CHANNEL TOOLS
-                        </a>
-                        <span>/</span>
-                        <a href="#projects" class="hover:underline flex items-center gap-2">
-                            <span class="font-mono font-black text-xs text-pitch-black/60">06.</span> TOSS ASSET UI/UX
-                        </a>
-                        <span>/</span>
-                        <a href="#contact" class="hover:underline flex items-center gap-2">
-                            <span class="font-mono font-black text-xs text-pitch-black/60">07.</span> CONTACT &amp; NETWORKING
-                        </a>
+                        <a href="#about" class="text-[10px] md:text-xs font-mono font-bold tracking-wider text-[#1A1A1A] dark:text-[#EBEBEB] border-b-2 border-[#1A1A1A] dark:border-[#EBEBEB] pb-1 hover:text-[#FF60B5] hover:border-[#FF60B5] transition-colors">[READ MORE]</a>
                     </div>
                 </div>
             </div>
-
+            <div class="absolute bottom-0 left-0 w-full flex justify-between px-6 md:px-12 font-black text-[#FF60B5] pointer-events-none select-none text-[13.5vw] leading-[0.72] z-20 font-poster">
+                <span>Y</span>
+                <span>O</span>
+                <span>O</span>
+                <span>N</span>
+                <span>©</span>
+                <span>9</span>
+                <span>0</span>
+            </div>
         </section>
 
         <!-- ABOUT & CAREER TIMELINE SECTION -->
