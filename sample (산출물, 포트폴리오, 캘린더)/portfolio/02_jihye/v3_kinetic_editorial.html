@@ -141,6 +141,35 @@
             z-index: 30;
             position: relative;
         }
+
+        /* Smooth Scroll-Triggered Black Mode Transition */
+        #hero {
+            transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1), color 0.8s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.8s ease;
+        }
+        #hero.black-mode {
+            background-color: #050505 !important;
+            color: #F5F5F7 !important;
+            border-bottom-color: #D4FF00 !important;
+        }
+        #hero.black-mode h1 {
+            color: #F5F5F7 !important;
+        }
+        #hero.black-mode .border-pitch-black {
+            border-color: rgba(255, 255, 255, 0.25) !important;
+        }
+        #hero.black-mode .text-pitch-black {
+            color: #F5F5F7 !important;
+        }
+        #hero.black-mode .text-pitch-black\/90 {
+            color: rgba(245, 245, 247, 0.9) !important;
+        }
+        #hero.black-mode .text-pitch-black\/60 {
+            color: rgba(245, 245, 247, 0.6) !important;
+        }
+        #hero.black-mode .bg-pitch-black {
+            background-color: #D4FF00 !important;
+            color: #050505 !important;
+        }
     </style>
 </head>
 
@@ -724,7 +753,7 @@
         }
         drawParticles();
 
-        // 5. GSAP ScrollTrigger Animations
+        // 5. GSAP ScrollTrigger Animations & Black Mode Switch
         gsap.registerPlugin(ScrollTrigger);
 
         gsap.from('#hero h1', {
@@ -734,6 +763,19 @@
             ease: 'power3.out',
             stagger: 0.15
         });
+
+        // Scroll-Triggered Black Mode Theme Switch
+        const heroEl = document.querySelector('#hero');
+        const nameEl = document.querySelector('#physics-name');
+
+        if (heroEl && nameEl) {
+            ScrollTrigger.create({
+                trigger: nameEl,
+                start: 'top 75%',
+                onEnter: () => heroEl.classList.add('black-mode'),
+                onLeaveBack: () => heroEl.classList.remove('black-mode')
+            });
+        }
 
         // ==========================================
         // 6. WORD HOVER SCALING & COLOR TRANSITION ENGINE

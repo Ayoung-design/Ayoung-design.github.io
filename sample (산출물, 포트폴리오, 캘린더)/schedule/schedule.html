@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Global Rebranding Schedule</title>
+  <meta name="description" content="PlusX Project WBS Schedule">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;900&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    /* ============================================
+       DESIGN TOKENS
+       ============================================ */
+    :root {
+      --font-sans: 'Noto Sans KR', 'Inter', -apple-system, sans-serif;
+      --font-en: 'Inter', -apple-system, sans-serif;
+
+      /* Document Colors */
+      --ink: #111111;
+      --ink-soft: #333333;
+      --ink-muted: #666666;
+      --ink-faint: #999999;
+      --paper: #ffffff;
+      --paper-tint: #f3f3f3;
+      --bar-bg: #eeeeee;
+      
+      /* Borders */
+      --border: #e0e0e0;
+      --border-dark: #111111;
+      
+      /* Grid Config (Updated by JS) */
+      --total-weeks: 24;
+      --week-width: 44px; /* fixed width per week column */
+      --left-width: 240px; /* Phase / Tasks column */
+    }
+
+    /* ============================================
+       RESET & BASE
+       ============================================ */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { font-size: 13px; -webkit-font-smoothing: antialiased; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--paper-tint);
+      color: var(--ink);
+      line-height: 1.5;
+      padding: 40px 20px 120px;
+      overflow-x: auto;
+    }
+
+    [contenteditable="true"] {
+      outline: none;
+      transition: background 0.2s;
+    }
+    [contenteditable="true"]:hover { background: rgba(0,0,0,0.03); }
+    [contenteditable="true"]:focus { background: rgba(0,0,0,0.06); }
+
+    /* ============================================
+       DOCUMENT WRAPPER
+       ============================================ */
+    .doc {
+      width: max-content;
+      min-width: 1000px;
+      margin: 0 auto;
+      background: var(--paper);
+      box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+      padding: 40px 40px 60px;
+      position: relative;
+    }
+
+    /* ============================================
+       HEADER
+       ============================================ */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 24px;
+      font-family: var(--font-en);
+    }
+    
+    .title { font-size: 1.4rem; font-weight: 500; letter-spacing: -0.02em; }
+    .subtitle { font-size: 1.4rem; font-weight: 500; letter-spacing: -0.02em; }
+
+    /* ============================================
+       TIMELINE GRID
+       ============================================ */
+    .timeline-container {
+      position: relative;
+      border-top: 1.5px solid var(--border-dark);
+      border-bottom: 1.5px solid var(--border-dark);
+    }
+
+    /* Header Rows (Months & Weeks) */
+    .th-months, .th-weeks {
+      display: grid;
+      grid-template-columns: var(--left-width) repeat(var(--total-weeks), var(--week-width));
+      border-bottom: 1px solid var(--border-dark);
+    }
+    
+    .th-months {
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .th-cell {
+      padding: 6px 0;
+      border-right: 1px solid var(--border);
+    }
+    .th-cell:last-child { border-right: none; }
+    .th-cell--empty { border-right: none; }
+    
+    .th-weeks {
+      font-size: 0.7rem;
+      font-weight: 400;
+      text-align: center;
+      color: var(--ink-soft);
+    }
+
+    /* Phase Rows */
+    .phase-row {
+      display: grid;
+      grid-template-columns: var(--left-width) repeat(var(--total-weeks), var(--week-width));
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      min-height: 80px;
+    }
+
+    .phase-row:last-child {
+      border-bottom: none;
+    }
+
+    .phase-info {
+      display: flex;
+      padding: 12px;
+      border-right: 1px solid var(--border-dark);
+      gap: 16px;
+    }
+
+    .phase-name {
+      width: 70px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+
+    .task-list {
+      flex: 1;
+      font-size: 0.7rem;
+      color: var(--ink-soft);
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    /* Grid vertical lines in the background */
+    .grid-lines {
+      position: absolute;
+      top: 0; left: var(--left-width); right: 0; bottom: 0;
+      display: grid;
+      grid-template-columns: repeat(var(--total-weeks), var(--week-width));
+      pointer-events: none;
+    }
+    .grid-line { border-right: 1px dashed var(--border); }
+    .grid-line:last-child { border-right: none; }
+
+    /* Today Marker */
+    .today-marker {
+      position: absolute; top: 0; bottom: 0;
+      width: 0; border-left: 1.5px dashed rgba(255, 60, 60, 0.7);
+      z-index: 15; pointer-events: none;
+    }
+
+    /* Gantt Bars */
+    .bar-container {
+      position: absolute;
+      top: 0; left: var(--left-width); right: 0; bottom: 0;
+      padding: 0;
+    }
+
+    .gantt-bar {
+      background: var(--bar-bg);
+      height: 100%;
+      position: absolute;
+      cursor: grab;
+    }
+    .gantt-bar:active { cursor: grabbing; }
+
+    /* Drag handles */
+    .handle {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 8px;
+      cursor: ew-resize;
+      z-index: 10;
+    }
+    .handle-l { left: -4px; }
+    .handle-r { right: -4px; }
+
+    /* ============================================
+       CONTROLS & PROGRESS
+       ============================================ */
+    .controls {
+      display: flex; flex-direction: column; gap: 2px;
+      position: absolute; left: -24px; top: 50%; transform: translateY(-50%);
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .phase-info { position: relative; }
+    .phase-row:hover .controls { opacity: 1; }
+    .ctrl-btn {
+      width: 18px; height: 18px; background: var(--paper); border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 8px; cursor: pointer; color: var(--ink-soft); border-radius: 2px;
+    }
+    .ctrl-btn:hover { background: var(--paper-accent); color: var(--ink); }
+
+    .m-controls {
+      position: absolute; top: -14px; right: -10px; width: 14px; height: 14px;
+      background: var(--paper); border: 1px solid var(--border);
+      display: none; align-items: center; justify-content: center;
+      font-size: 8px; cursor: pointer; color: var(--ink-soft); border-radius: 50%;
+    }
+    .milestone-label:hover .m-controls { display: flex; }
+    .m-controls:hover { background: #ffcccc; color: red; }
+
+    .bar-controls {
+      position: absolute; top: -28px; left: 0; display: none; gap: 4px; align-items: center;
+      background: var(--paper); padding: 4px 6px; border: 1px solid var(--border); border-radius: 4px;
+      box-shadow: var(--shadow-sm); z-index: 30;
+    }
+    .gantt-bar:hover .bar-controls { display: flex; }
+    .color-picker { width: 16px; height: 16px; padding: 0; border: none; cursor: pointer; }
+    .progress-input { width: 40px; font-size: 0.7rem; border: 1px solid var(--border); padding: 2px; text-align: center; }
+
+    .progress-fill {
+      position: absolute; top: 0; bottom: 0; left: 0;
+      background: rgba(0,0,0,0.15); pointer-events: none;
+    }
+
+    .assignee {
+      font-size: 0.6rem; color: var(--ink-faint); margin-top: 6px;
+      border: 1px dashed transparent; padding: 2px; border-radius: 2px;
+    }
+    .assignee:hover { border-color: var(--border); }
+
+    /* ============================================
+       MILESTONES (Inside Gantt Bar)
+       ============================================ */
+    .milestone-label {
+      position: absolute;
+      top: 8px;
+      transform: translateX(-50%);
+      width: 120px;
+      text-align: center;
+      font-size: 0.65rem;
+      cursor: ew-resize;
+      z-index: 20;
+      pointer-events: auto;
+    }
+    .m-title { font-weight: 700; display: block; }
+    .m-sub { color: var(--ink-soft); display: block; }
+
+    /* ============================================
+       FOOTER
+       ============================================ */
+    .footer-note {
+      font-size: 0.65rem;
+      color: var(--ink-faint);
+      margin-top: 12px;
+    }
+
+    /* ============================================
+       TOOLBAR
+       ============================================ */
+    .toolbar {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(17,17,17,0.94);
+      backdrop-filter: blur(24px);
+      border-radius: 14px;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 100;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.25);
+    }
+    .tb-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.1); margin: 0 6px; }
+    .tb-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border: none; border-radius: 8px;
+      background: rgba(255,255,255,0.08);      padding: 2px 8px;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .tb-btn:hover { background: var(--toolbar-btn-hover); }
+    .tb-btn--accent { background: var(--ink); color: var(--paper); border: none; }
+    .tb-btn--accent:hover { background: #333; }
+    
+    .tb-date {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #e8e8e8;
+      border-radius: 4px;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ============================================
+       PDF MODE
+       ============================================ */
+    body.pdf-mode {
+      padding: 0 !important;
+      margin: 0 !important;
+      background: #fff !important;
+      overflow: visible !important;
+    }
+    body.pdf-mode .doc {
+      box-shadow: none !important;
+      padding: 20px !important;
+      min-width: 0 !important;
+    }
+    body.pdf-mode .toolbar { display: none !important; }
+    body.pdf-mode [contenteditable="true"] { background: transparent !important; }
+  </style>
+</head>
+<body>
+
+<article class="doc" id="doc">
+  <header class="header">
+    <div class="title" contenteditable="true" id="f-title">Global Rebranding</div>
+    <div class="subtitle">Schedule</div>
+  </header>
+
+  <div class="timeline-container" id="tl-container">
+    <!-- Generated by JS -->
+  </div>
+
+  <div class="footer-note" contenteditable="true" id="f-note">
+    * 위 내용은 2025년 6월 4일에 작성한 일정 초안입니다. 향후 계약서에 명시된 업무 영역과 실제 프로젝트 착수 시점에 따라 세부 내용이 변경될 수 있습니다.
+  </div>
+</article>
+
+<div class="toolbar">
+  <button class="tb-btn" onclick="saveLocal()">💾 저장</button>
+  <button class="tb-btn" onclick="loadLocal()">📂 불러오기</button>
+  <div class="tb-divider"></div>
+  <button class="tb-btn" onclick="addPhase()">➕ 단계 추가</button>
+  <button class="tb-btn" onclick="addMilestone()">📍 마일스톤 추가</button>
+  <div class="tb-divider"></div>
+  <span style="font-size: 0.8rem; color: var(--ink-soft); margin-left: auto;">시작일:</span>
+  <input type="date" class="tb-date" id="startDateInput" onchange="updateStartDate(this.value)">
+  <div class="tb-divider"></div>
+  <button class="tb-btn tb-btn--accent" onclick="exportPDF()">📄 PDF 저장</button>
+</div>
+
+<script>
+// ==========================================
+// DATA STATE
+// ==========================================
+let state = {
+  title: "Global Rebranding",
+  note: "* 위 내용은 2025년 6월 4일에 작성한 일정 초안입니다. 향후 계약서에 명시된 업무 영역과 실제 프로젝트 착수 시점에 따라 세부 내용이 변경될 수 있습니다.",
+  startDate: "2025-06-16",
+  weeks: [
+    { m: '6월', w: '6/16' }, { m: '', w: '6/23' }, { m: '', w: '6/30' },
+    { m: '7월', w: '7/7' }, { m: '', w: '7/14' }, { m: '', w: '7/21' }, { m: '', w: '7/28' },
+    { m: '8월', w: '8/4' }, { m: '', w: '8/11' }, { m: '', w: '8/18' }, { m: '', w: '8/25' },
+    { m: '9월', w: '9/1' }, { m: '', w: '9/8' }, { m: '', w: '9/15' }, { m: '', w: '9/22' }, { m: '', w: '9/29' },
+    { m: '10월', w: '10/6' }, { m: '', w: '10/13' }, { m: '', w: '10/20' }, { m: '', w: '10/27' },
+    { m: '11월', w: '11/3' }, { m: '', w: '11/10' }, { m: '', w: '11/17' }
+  ],
+  phases: [
+    {
+      id: 'p1',
+      name: "전략 기획",
+      tasks: "- 내부 이해관계자 인터뷰\n- 브랜드 환경/현황 분석\n- 브랜드 네이밍\n- 브랜드 비전/미션/핵심가치 정립",
+      start: 1, end: 9
+    },
+    {
+      id: 'p2',
+      name: "브랜드 디자인",
+      tasks: "- 컨셉 도출 및 원칙 수립\n- 브랜드마크 디자인\n- 키 비주얼 개발\n- 컬러 시스템 개발\n- 타이포그래피 시스템 개발",
+      start: 9, end: 17
+    },
+    {
+      id: 'p3',
+      name: "어플리케이션 디자인",
+      tasks: "- 명함, 사원증, 대/소봉투, 쇼핑백\n- 앱아이콘, 스플래시, 모바일 룩앤필\n- 웹사이트 톤앤매너\n- 기업 굿즈 (5종)",
+      start: 17, end: 23
+    },
+    {
+      id: 'p4',
+      name: "가이드라인 개발",
+      tasks: "- 브랜드 가이드라인 (PDF/AI)",
+      start: 22, end: 23
+    }
+  ],
+  milestones: [
+    { id: 'm1', week: 5, title: '1st Review', sub: '전략 방향성 및\n네이밍 제안' },
+    { id: 'm2', week: 9, title: '2nd Review', sub: '브랜드 슬로건 및\nBIS 고도화' },
+    { id: 'm3', week: 14, title: '3rd Review', sub: '디자인 컨셉 제안' },
+    { id: 'm4', week: 17, title: '4th Review', sub: '디자인 시안 제안' },
+    { id: 'm5', week: 22, title: 'Application Design', sub: '어플리케이션 디자인 완료' },
+    { id: 'm6', week: 23, title: 'Project End', sub: '최종 가이드라인 전달' }
+  ]
+};
+
+// ==========================================
+// RENDERER
+// ==========================================
+function render() {
+  document.getElementById('f-title').textContent = state.title;
+  document.getElementById('f-note').textContent = state.note;
+  
+  const startInput = document.getElementById('startDateInput');
+  if(startInput && state.startDate) startInput.value = state.startDate;
+
+  const root = document.documentElement;
+  root.style.setProperty('--total-weeks', state.weeks.length);
+
+  let html = '';
+
+  // Calculate Today Marker
+  let todayMarker = '';
+  if(state.startDate) {
+    let startD = new Date(state.startDate);
+    startD.setHours(0,0,0,0);
+    let today = new Date();
+    today.setHours(0,0,0,0);
+    let diffDays = (today - startD) / (1000 * 60 * 60 * 24);
+    if(diffDays >= 0 && diffDays <= state.weeks.length * 7) {
+      let offset = diffDays * (44 / 7); // weekWidth = 44px
+      todayMarker = `<div class="today-marker" style="left: calc(var(--left-width) + ${offset}px)"></div>`;
+    }
+  }
+
+  // 1. Headers (Months & Weeks)
+  let monthHtml = `<div class="th-cell th-cell--empty"></div>`;
+  let weekHtml = `<div class="th-cell th-cell--empty"></div>`;
+  
+  // Calculate month colspans
+  let months = [];
+  let currentM = null;
+  state.weeks.forEach(w => {
+    if (w.m) {
+      if(currentM) months.push(currentM);
+      currentM = { name: w.m, span: 1 };
+    } else if (currentM) {
+      currentM.span++;
+    }
+  });
+  if(currentM) months.push(currentM);
+
+  months.forEach(m => {
+    monthHtml += `<div class="th-cell" style="grid-column: span ${m.span}">${m.name}</div>`;
+  });
+  
+  state.weeks.forEach(w => {
+    weekHtml += `<div class="th-cell">${w.w}</div>`;
+  });
+
+  html += `<div class="th-months">${monthHtml}</div>`;
+  html += `<div class="th-weeks">${weekHtml}</div>`;
+  html += todayMarker; // Append today marker below headers
+  
+  // 2. Phases
+  let unassignedMilestones = [...state.milestones];
+
+  state.phases.forEach((p, idx) => {
+    // Generate background grid lines
+    let gridLines = '';
+    for(let i=0; i<state.weeks.length; i++) gridLines += '<div class="grid-line"></div>';
+
+    // Find milestones for this phase
+    let phaseMilestonesHtml = '';
+    let mForPhase = unassignedMilestones.filter(m => {
+      if (idx === 0) return m.week >= p.start && m.week <= p.end;
+      return m.week > p.start && m.week <= p.end;
+    });
+    
+    // Fallback: assign remaining milestones to the last phase
+    if (idx === state.phases.length - 1 && unassignedMilestones.length > mForPhase.length) {
+      mForPhase = [...new Set([...mForPhase, ...unassignedMilestones])];
+    }
+
+    mForPhase.forEach(m => {
+      unassignedMilestones = unassignedMilestones.filter(x => x.id !== m.id);
+      phaseMilestonesHtml += `
+      <div class="milestone-label" style="left: calc((${m.week} - ${p.start}) * var(--week-width));" onmousedown="startDragM(event, '${m.id}')">
+        <div class="m-controls" onclick="deleteM('${m.id}')">✕</div>
+        <span class="m-title" contenteditable="true" onblur="updateM('${m.id}', 'title', this.innerText)" onmousedown="event.stopPropagation()">${m.title}</span>
+        <span class="m-sub" contenteditable="true" onblur="updateM('${m.id}', 'sub', this.innerText)" onmousedown="event.stopPropagation()">${m.sub.replace(/\n/g, '<br>')}</span>
+      </div>`;
+    });
+
+    html += `
+    <div class="phase-row" data-id="${p.id}">
+      <div class="phase-info">
+        <div class="controls">
+          <div class="ctrl-btn" onclick="moveUp('${p.id}')">▲</div>
+          <div class="ctrl-btn" onclick="moveDown('${p.id}')">▼</div>
+          <div class="ctrl-btn" onclick="deletePhase('${p.id}')">✕</div>
+        </div>
+        <div class="phase-name">
+          <div contenteditable="true" onblur="updatePhase('${p.id}', 'name', this.innerText)">${p.name}</div>
+          <div class="assignee" contenteditable="true" onblur="updatePhase('${p.id}', 'assignee', this.innerText)">${p.assignee || '담당자 입력'}</div>
+        </div>
+        <div class="task-list" contenteditable="true" onblur="updatePhase('${p.id}', 'tasks', this.innerText)">${p.tasks}</div>
+      </div>
+      <div class="grid-lines">${gridLines}</div>
+      <div class="bar-container">
+        <div class="gantt-bar" style="left: calc((${p.start} - 1) * var(--week-width)); width: calc((${p.end} - ${p.start} + 1) * var(--week-width)); background: ${p.color || 'var(--bar-bg)'};" onmousedown="startDrag(event, '${p.id}', 'move')">
+          <div class="progress-fill" style="width: ${p.progress || 0}%"></div>
+          <div class="bar-controls" onmousedown="event.stopPropagation()">
+            <input type="color" class="color-picker" value="${p.color || '#eeeeee'}" onchange="updatePhase('${p.id}', 'color', this.value); render();">
+            <input type="number" class="progress-input" value="${p.progress || 0}" onchange="updatePhase('${p.id}', 'progress', this.value); render();" min="0" max="100" title="진척도(%)">%
+          </div>
+          <div class="handle handle-l" onmousedown="startDrag(event, '${p.id}', 'resize-l')"></div>
+          <div class="handle handle-r" onmousedown="startDrag(event, '${p.id}', 'resize-r')"></div>
+          ${phaseMilestonesHtml}
+        </div>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById('tl-container').innerHTML = html;
+}
+
+// ==========================================
+// DATA BINDING
+// ==========================================
+function updatePhase(id, key, val) {
+  const p = state.phases.find(x => x.id === id);
+  if(p) p[key] = val;
+}
+function updateM(id, key, val) {
+  const m = state.milestones.find(x => x.id === id);
+  if(m) m[key] = val;
+}
+document.getElementById('f-title').addEventListener('blur', function() { state.title = this.innerText; });
+document.getElementById('f-note').addEventListener('blur', function() { state.note = this.innerText; });
+
+// ==========================================
+// DRAG LOGIC - PHASES
+// ==========================================
+let dragState = null;
+
+function startDrag(e, id, type) {
+  e.stopPropagation();
+  e.preventDefault();
+  const phase = state.phases.find(x => x.id === id);
+  const startX = e.clientX;
+  const startStart = phase.start;
+  const startEnd = phase.end;
+  const colWidth = 44; // matched with CSS --week-width
+  const dayWidth = colWidth / 7;
+
+  function onMove(me) {
+    const dx = me.clientX - startX;
+    const cols = Math.round(dx / colWidth);
+    
+    if (type === 'move') {
+      let nStart = startStart + cols;
+      let nEnd = startEnd + cols;
+      if (nStart < 1) { nEnd += (1 - nStart); nStart = 1; }
+      if (nEnd > state.weeks.length) { nStart -= (nEnd - state.weeks.length); nEnd = state.weeks.length; }
+      phase.start = nStart;
+      phase.end = nEnd;
+    } 
+    else if (type === 'resize-l') {
+      let nStart = startStart + cols;
+      if (nStart < 1) nStart = 1;
+      if (nStart > phase.end) nStart = phase.end;
+      phase.start = nStart;
+    }
+    else if (type === 'resize-r') {
+      let nEnd = startEnd + cols;
+      if (nEnd < phase.start) nEnd = phase.start;
+      if (nEnd > state.weeks.length) nEnd = state.weeks.length;
+      phase.end = nEnd;
+    }
+    render();
+  }
+
+  function onUp() {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+  }
+
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+}
+
+// ==========================================
+// DRAG LOGIC - MILESTONES
+// ==========================================
+function startDragM(e, id) {
+  e.preventDefault();
+  const ms = state.milestones.find(x => x.id === id);
+  const startX = e.clientX;
+  const startWeek = ms.week;
+  const colWidth = 44;
+
+  function onMove(me) {
+    const dx = me.clientX - startX;
+    const cols = Math.round(dx / colWidth);
+    let nw = startWeek + cols;
+    if (nw < 1) nw = 1;
+    if (nw > state.weeks.length) nw = state.weeks.length;
+    ms.week = nw;
+    render();
+  }
+
+  function onUp() {
+    window.removeEventListener('mousemove', onMove);
+    window.removeEventListener('mouseup', onUp);
+  }
+
+  window.addEventListener('mousemove', onMove);
+  window.addEventListener('mouseup', onUp);
+}
+
+// ==========================================
+// ACTIONS
+// ==========================================
+function addPhase() {
+  state.phases.push({
+    id: 'p' + Date.now(),
+    name: "새 단계",
+    tasks: "- 세부 업무",
+    start: 1, end: 4
+  });
+  render();
+}
+
+function addMilestone() {
+  state.milestones.push({
+    id: 'm' + Date.now(),
+    week: 1,
+    title: "New Review",
+    sub: "내용"
+  });
+  render();
+}
+
+function saveLocal() {
+  localStorage.setItem('px-wbs', JSON.stringify(state));
+  alert('저장되었습니다.');
+}
+
+function loadLocal() {
+  const d = localStorage.getItem('px-wbs');
+  if(d) { state = JSON.parse(d); render(); alert('불러왔습니다.'); }
+}
+
+// ==========================================
+// PDF EXPORT
+// ==========================================
+function exportPDF() {
+  const doc = document.getElementById('doc');
+  document.body.classList.add('pdf-mode');
+
+  // Replace contenteditable spans with plain divs for html2canvas
+  const replacements = [];
+  doc.querySelectorAll('[contenteditable="true"]').forEach(el => {
+    const rep = document.createElement('div');
+    rep.innerHTML = el.innerHTML;
+    rep.className = el.className;
+    rep.style.cssText = window.getComputedStyle(el).cssText;
+    rep.style.background = 'transparent';
+    el.parentNode.insertBefore(rep, el);
+    el.style.display = 'none';
+    replacements.push({ orig: el, rep: rep });
+  });
+
+  setTimeout(() => {
+    html2pdf().set({
+      margin: 10,
+      filename: `PlusX_Schedule_${new Date().toISOString().slice(0,10)}.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        width: doc.scrollWidth,
+        windowWidth: doc.scrollWidth
+      },
+      jsPDF: { unit: 'mm', format: [doc.scrollWidth * 0.264583, doc.scrollHeight * 0.264583], orientation: 'landscape' }
+    }).from(doc).save().then(() => {
+      restore();
+    }).catch(e => {
+      console.error(e); restore();
+    });
+  }, 200);
+
+  function restore() {
+    replacements.forEach(r => {
+      r.orig.style.display = '';
+      r.rep.remove();
+    });
+    document.body.classList.remove('pdf-mode');
+  }
+}
+
+// ==========================================
+// NEW CONTROLS (Delete & Reorder)
+// ==========================================
+function moveUp(id) {
+  const idx = state.phases.findIndex(p => p.id === id);
+  if(idx > 0) {
+    const tmp = state.phases[idx];
+    state.phases[idx] = state.phases[idx-1];
+    state.phases[idx-1] = tmp;
+    render();
+  }
+}
+
+function moveDown(id) {
+  const idx = state.phases.findIndex(p => p.id === id);
+  if(idx !== -1 && idx < state.phases.length - 1) {
+    const tmp = state.phases[idx];
+    state.phases[idx] = state.phases[idx+1];
+    state.phases[idx+1] = tmp;
+    render();
+  }
+}
+
+function deletePhase(id) {
+  if(confirm('이 단계를 삭제하시겠습니까?')) {
+    state.phases = state.phases.filter(p => p.id !== id);
+    render();
+  }
+}
+
+function deleteM(id) {
+  if(confirm('이 마일스톤을 삭제하시겠습니까?')) {
+    state.milestones = state.milestones.filter(m => m.id !== id);
+    render();
+  }
+}
+
+// ==========================================
+// AUTO-DATE LOGIC
+// ==========================================
+function generateWeeks(startStr) {
+  let date = new Date(startStr);
+  let weeks = [];
+  let lastM = -1;
+  for(let i=0; i<24; i++) {
+    let m = date.getMonth() + 1;
+    let d = date.getDate();
+    let monthLabel = (m !== lastM) ? `${m}월` : '';
+    weeks.push({ m: monthLabel, w: `${m}/${d}` });
+    lastM = m;
+    date.setDate(date.getDate() + 7);
+  }
+  return weeks;
+}
+
+function updateStartDate(val) {
+  if(!val) return;
+  state.startDate = val;
+  state.weeks = generateWeeks(val);
+  render();
+}
+
+// If weeks length doesn't match generated, or first run logic (optional).
+// Let's ensure state.weeks is in sync if someone changes startDate
+if(state.startDate && state.weeks.length !== 24) {
+  state.weeks = generateWeeks(state.startDate);
+}
+
+// Init
+render();
+</script>
+</body>
+</html>
