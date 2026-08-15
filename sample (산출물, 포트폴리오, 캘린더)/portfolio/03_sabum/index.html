@@ -19,14 +19,14 @@
         }
 
         :root {
-            --bg: #0000AA;
+            --bg: #000000;
             --text: #FFFFFF;
-            --highlight: #FFFF00;
+            --highlight: #FF60B5;
             --dim: #AAAAAA;
             --cursor: #FFFFFF;
-            --accent: #55FFFF;
-            --green: #55FF55;
-            --red: #FF5555;
+            --accent: #FF60B5;
+            --green: #888888;
+            --red: #FF60B5;
         }
 
         /* Theme: BLACK */
@@ -41,11 +41,11 @@
 
         /* Theme: PRISM */
         body.theme-prism {
-            --bg: #1a0a2e;
+            --bg: #111111;
         }
 
         body.theme-prism .hero-visual {
-            background: linear-gradient(135deg, #1a0a2e, #16213e, #0f3460, #533483, #e94560, #0f3460, #1a0a2e);
+            background: linear-gradient(135deg, #111111, #222222, #000000, #444444, #FF60B5, #000000, #111111);
             background-size: 400% 400%;
             animation: prismShift 8s ease infinite;
         }
@@ -65,7 +65,7 @@
         }
 
         body.theme-prism {
-            background: linear-gradient(135deg, #1a0a2e, #16213e, #0f3460, #533483, #1a0a2e);
+            background: linear-gradient(135deg, #111111, #222222, #000000, #444444, #111111);
             background-size: 400% 400%;
             animation: prismBg 12s ease infinite;
         }
@@ -238,63 +238,63 @@
                 clip-path: inset(0 0 80% 0);
                 transform: translateX(-4px);
                 opacity: 0.7;
-                text-shadow: 2px 0 #ff0055, -2px 0 #00ffaa;
+                text-shadow: 2px 0 #FF60B5, -2px 0 #888888;
             }
 
             10% {
                 clip-path: inset(20% 0 40% 0);
                 transform: translateX(6px);
                 opacity: 0.9;
-                text-shadow: -3px 0 #ff0055, 3px 0 #00ffaa;
+                text-shadow: -3px 0 #FF60B5, 3px 0 #888888;
             }
 
             20% {
                 clip-path: inset(60% 0 10% 0);
                 transform: translateX(-2px);
                 opacity: 0.6;
-                text-shadow: 1px 0 #ff0055, -1px 0 #00ffaa;
+                text-shadow: 1px 0 #FF60B5, -1px 0 #888888;
             }
 
             30% {
                 clip-path: inset(10% 0 60% 0);
                 transform: translateX(4px);
                 opacity: 1;
-                text-shadow: -2px 0 #ff0055, 2px 0 #00ffaa;
+                text-shadow: -2px 0 #FF60B5, 2px 0 #888888;
             }
 
             40% {
                 clip-path: inset(40% 0 20% 0);
                 transform: translateX(-6px);
                 opacity: 0.8;
-                text-shadow: 3px 0 #ff0055, -3px 0 #00ffaa;
+                text-shadow: 3px 0 #FF60B5, -3px 0 #888888;
             }
 
             50% {
                 clip-path: inset(0 0 30% 0);
                 transform: translateX(2px);
                 opacity: 0.9;
-                text-shadow: -1px 0 #ff0055, 1px 0 #00ffaa;
+                text-shadow: -1px 0 #FF60B5, 1px 0 #888888;
             }
 
             60% {
                 clip-path: inset(50% 0 0% 0);
                 transform: translateX(-3px);
                 opacity: 1;
-                text-shadow: 2px 0 #ff0055, -2px 0 #00ffaa;
+                text-shadow: 2px 0 #FF60B5, -2px 0 #888888;
             }
 
             70% {
                 clip-path: inset(5% 0 5% 0);
                 transform: translateX(1px);
                 opacity: 0.95;
-                text-shadow: -1px 0 #ff0055, 1px 0 #00ffaa;
+                text-shadow: -1px 0 #FF60B5, 1px 0 #888888;
             }
 
             80% {
                 clip-path: none;
                 transform: translateX(-1px);
                 opacity: 1;
-                text-shadow: 1px 0 #ff0055, -1px 0 #00ffaa;
+                text-shadow: 1px 0 #FF60B5, -1px 0 #888888;
             }
 
             90% {
@@ -386,7 +386,7 @@
             width: 100vw;
             margin-left: calc(-50vw + 50%);
             margin-bottom: 100px;
-            background: linear-gradient(180deg, #000088 0%, #000055 50%, #000088 100%);
+            background: linear-gradient(180deg, #111111 0%, #000000 50%, #111111 100%);
             border-top: 2px solid var(--highlight);
             border-bottom: 2px solid var(--highlight);
             padding: 0;
@@ -1377,7 +1377,7 @@
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             const W = 240, H = 40;
-            const Y = '#FFFF00', D = '#AAAA00', B = '#0000AA', G = '#00AA00', R = '#FF0055', C = '#00FFAA', WH = '#FFFFFF', DM = '#AAAAAA';
+            const Y = '#FF60B5', D = '#888888', B = '#000000', G = '#888888', R = '#FF60B5', C = '#888888', WH = '#FFFFFF', DM = '#AAAAAA';
 
             // Character frames (10x14) — 2 walk frames per direction
             const charFrames = [
@@ -1868,7 +1868,7 @@
                 const offsetX = (Math.random() - 0.5) * 6;
                 const skewX = (Math.random() - 0.5) * 0.5;
                 screen.style.transform = `translateX(${offsetX}px) skewX(${skewX}deg)`;
-                screen.style.textShadow = `${Math.random() * 3}px 0 #ff0055, ${-Math.random() * 3}px 0 #00ffaa`;
+                screen.style.textShadow = `${Math.random() * 3}px 0 #FF60B5, ${-Math.random() * 3}px 0 #888888`;
 
                 // Overlay flash
                 if (intensity > 0.6) {
